@@ -56,13 +56,8 @@ export default function Main() {
 
         naver.maps.Event.addListener(marker, "click", () => {
           console.log(id, name);
-          if (window.ReactNativeWebView) {
-            window.ReactNativeWebView.postMessage(
-              "Wayne is coming again",
-              id,
-              name
-            );
-          }
+
+          window.postMessage("Wayne is coming again");
         });
       });
     };
