@@ -2,11 +2,6 @@ import { useState } from "react";
 import { RenderAfterNavermapsLoaded, NaverMap } from "react-naver-maps";
 
 export default function Main() {
-  const [center, setCenter] = useState({
-    lat: 37.5666103,
-    lng: 126.9783882,
-  });
-
   return (
     <RenderAfterNavermapsLoaded
       ncpClientId={"1m4n9csh9r"}
