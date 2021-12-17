@@ -45,6 +45,7 @@ export default function Main() {
             });
 
           window.postMessage("MAP_IS_CLICKED");
+          window.ReactNativeWebView.postMessage("map RN message");
 
           return {
             prev: prevMarker,
@@ -113,6 +114,7 @@ export default function Main() {
         });
 
       window.postMessage(JSON.stringify({ markerId: id }));
+      window.ReactNativeWebView.postMessage("marker RN message");
 
       return {
         prev: prevMarker,
