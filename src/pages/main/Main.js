@@ -44,8 +44,9 @@ export default function Main() {
           </div>`,
             });
 
-          window.postMessage("MAP_IS_CLICKED");
-          window.ReactNativeWebView.postMessage("map RN message");
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({ type: "MESSAGE", data: "MAP_IS_CLICKED" })
+          );
 
           return {
             prev: prevMarker,
@@ -113,8 +114,9 @@ export default function Main() {
   </div>`,
         });
 
-      window.postMessage(JSON.stringify({ markerId: id }));
-      window.ReactNativeWebView.postMessage("marker RN message");
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "MARKER_ID", data: id })
+      );
 
       return {
         prev: prevMarker,
