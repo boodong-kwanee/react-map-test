@@ -3,8 +3,6 @@ import { useRef, useState, useEffect } from "react";
 import { DATA } from "./data";
 import "./Marker.css";
 
-// import { CustomMarker } from "../../components/Marker";
-
 export default function Main() {
   const { naver } = window;
 
@@ -16,6 +14,11 @@ export default function Main() {
   });
   const [data] = useState(DATA);
 
+  const [clickedStation, setClickedStation] = useState({
+    prev: null,
+    current: null,
+  });
+
   useEffect(() => {
     const mapSetting = () => {
       // 지도 생성
@@ -26,6 +29,29 @@ export default function Main() {
       };
 
       const map = new naver.maps.Map("map", mapOptions);
+      naver.maps.Event.addListener(map, "click", () => {
+        setClickedStation((prevState) => {
+          const prevMarker = prevState.current;
+
+          prevMarker &&
+            prevMarker.setIcon({
+              content: `<div class="marker-container">
+            <div class="marker-box">
+              <span class="marker-content">${prevMarker.title}</span>
+            </div>
+            <span class="marker-box-triangle"></span>
+            <div class="marker-circle"></div>
+          </div>`,
+            });
+
+          window.postMessage("MAP_IS_CLICKED");
+
+          return {
+            prev: prevMarker,
+            current: null,
+          };
+        });
+      });
       setCreatdMap(map);
     };
 
@@ -34,8 +60,6 @@ export default function Main() {
 
   useEffect(() => {
     const createMarkers = () => {
-      const markers = [];
-
       data.forEach(({ id, name, geo }) => {
         const marker = new naver.maps.Marker({
           position: new naver.maps.LatLng(geo.latitude, geo.longitude),
@@ -52,18 +76,50 @@ export default function Main() {
           },
         });
 
-        markers.push(marker);
-
         naver.maps.Event.addListener(marker, "click", () => {
-          console.log(id, name);
-
-          window.postMessage("Wayne is coming again");
+          markerClick(marker, id);
         });
       });
     };
 
     createMarkers();
   }, [createdMap, data]);
+
+  const markerClick = (marker, id) => {
+    setClickedStation((prevState) => {
+      const prevMarker = prevState.current;
+      const currentMarker = marker;
+
+      prevMarker &&
+        prevMarker.setIcon({
+          content: `<div class="marker-container">
+      <div class="marker-box">
+        <span class="marker-content">${marker.title}</span>
+      </div>
+      <span class="marker-box-triangle"></span>
+      <div class="marker-circle"></div>
+    </div>`,
+        });
+
+      currentMarker &&
+        currentMarker.setIcon({
+          content: `<div class="marker-container">
+    <div class="marker-box marker-box-clicked">
+      <span class="marker-content marker-content-clicked">${marker.title}</span>
+    </div>
+    <span class="marker-box-triangle marker-box-clicked"></span>
+    <div class="marker-circle"></div>
+  </div>`,
+        });
+
+      window.postMessage({ markerId: id });
+
+      return {
+        prev: prevMarker,
+        current: currentMarker,
+      };
+    });
+  };
 
   return (
     <div>
