@@ -112,7 +112,7 @@ export default function Main() {
   </div>`,
         });
 
-      window.postMessage({ markerId: id });
+      window.postMessage(JSON.stringify({ markerId: id }));
 
       return {
         prev: prevMarker,
