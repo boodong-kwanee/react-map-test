@@ -55,6 +55,9 @@ export default function Main() {
         });
       });
       setCreatdMap(map);
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "MESSAGE", data: "MAP_IS_LOADED" })
+      );
     };
 
     mapSetting();
