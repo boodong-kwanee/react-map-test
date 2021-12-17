@@ -44,7 +44,7 @@ export default function Main() {
           </div>`,
             });
 
-          window.ReactNativeWebView.postMessage(
+          window.postMessage(
             JSON.stringify({ type: "MESSAGE", data: "MAP_IS_CLICKED" })
           );
 
@@ -55,7 +55,7 @@ export default function Main() {
         });
       });
       setCreatdMap(map);
-      window.ReactNativeWebView.postMessage(
+      window.postMessage(
         JSON.stringify({ type: "MESSAGE", data: "MAP_IS_LOADED" })
       );
     };
@@ -117,7 +117,7 @@ export default function Main() {
   </div>`,
         });
 
-      window.ReactNativeWebView.postMessage(
+      window.postMessage(
         JSON.stringify({ type: "MARKER_ID", data: id })
       );
 
