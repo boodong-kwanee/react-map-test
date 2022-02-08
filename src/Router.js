@@ -6,7 +6,7 @@ const Router = () => {
   return (
     <Routes>
       <Route exact path="/" element={<Main />} />
-      <Route exact path="/static" element={<Static />} />
+      <Route exact path="/staticmap" element={<Static />} />
     </Routes>
   );
 };
