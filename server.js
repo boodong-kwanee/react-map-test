@@ -15,7 +15,7 @@ app.use("/ping", (req, res) => {
 });
 
 app.use("/", (req, res) => {
-  console.log(__dirname);
+  console.log(__dirname, path.join(__dirname, "src", "index.js"));
   console.log("요청");
   // index.html 파일 응답
   res.sendFile(path.join(__dirname, "build", "index.html"));
