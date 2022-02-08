@@ -4,12 +4,10 @@ import { BrowserRouter, HashRouter } from "react-router-dom";
 import Router from "./Router";
 import GlobalStyles from "./styles/GlobalStyles";
 
-console.log("RENDER");
-
 ReactDOM.render(
-  <BrowserRouter>
+  <HashRouter>
     <GlobalStyles />
     <Router />
-  </BrowserRouter>,
+  </HashRouter>,
   document.getElementById("root")
 );
