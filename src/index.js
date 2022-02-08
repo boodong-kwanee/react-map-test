@@ -7,9 +7,9 @@ import GlobalStyles from "./styles/GlobalStyles";
 console.log("RENDER");
 
 ReactDOM.render(
-  <HashRouter>
+  <BrowserRouter>
     <GlobalStyles />
     <Router />
-  </HashRouter>,
+  </BrowserRouter>,
   document.getElementById("root")
 );
