@@ -1,0 +1,13 @@
+:root {
+  --rsbs-backdrop-bg: transparent;
+  --rsbs-bg: #fff;
+}
+
+.list-mode-icon {
+  position: absolute;
+  top: -66px;
+  right: 16px;
+  display: block;
+  width: 52px;
+  height: 52px;
+}

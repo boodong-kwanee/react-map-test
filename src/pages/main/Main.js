@@ -1,6 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useRef, useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
 import SearchInput from "./SearchInput";
 import DanjiListBottomSheet from "./DanjiListBottomSheet";
 import { useAutoCompletedSearch, useSearchMap } from "../../hooks/search";
@@ -64,6 +63,7 @@ export default function Main() {
               `,
             });
 
+          setShowBottomSheet(true);
           window.postMessage(
             JSON.stringify({ type: "MESSAGE", data: "MAP_IS_CLICKED" })
           );
@@ -227,6 +227,8 @@ export default function Main() {
     current: null,
   });
 
+  const [showBottomSheet, setShowBottomSheet] = useState(true);
+
   const markerClick = (marker, id) => {
     setClickedStation((prevState) => {
       const prevMarker = prevState.current;
@@ -264,6 +266,7 @@ export default function Main() {
       }
 
       window.postMessage(JSON.stringify({ type: "MARKER_ID", data: id }));
+      setShowBottomSheet(false);
 
       return {
         prev: prevMarker,
@@ -274,7 +277,9 @@ export default function Main() {
 
   return (
     <div>
-      {/* <DanjiListBottomSheet /> */}
+      {showBottomSheet && (
+        <DanjiListBottomSheet searchMapData={searchMapData} />
+      )}
       <SearchInput
         searchInputValue={searchInputValue}
         setSearchInputValue={setSearchInputValue}
