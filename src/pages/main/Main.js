@@ -1,5 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useRef, useState, useEffect } from "react";
+import SearchInput from "./SearchInput";
+import { useAutoCompletedSearch, useSearchMap } from "../../hooks/search";
+import { extractSearchQuery, objToQueryString } from "../../utils/search";
 import { DATA } from "./data";
 import "./Marker.css";
 
@@ -12,12 +15,57 @@ export default function Main() {
     position: { lat: 37.348159275838256, lng: 127.09817774825865 },
     zoom: 16,
   });
+
+  const [searchInputValue, setSearchInputValue] = useState("");
+  const [showAutoCompletedList, setShowAutoCompletedList] = useState(false);
+
+  const {
+    reset,
+    mutate: autoCompletedMutate,
+    data: autoCompletedData,
+    isSuccess: isAutoCompletedSuccess,
+  } = useAutoCompletedSearch();
+
+  const { mutate: searchMapMutate, data: searchMapData } = useSearchMap();
+
+  useEffect(() => {
+    reset();
+
+    if (!searchInputValue || isAutoCompletedSuccess) {
+      setShowAutoCompletedList(false);
+      return;
+    }
+
+    const obj = extractSearchQuery(searchInputValue);
+    const queryString = objToQueryString(obj);
+    autoCompletedMutate(queryString);
+
+    if (!showAutoCompletedList) {
+      setShowAutoCompletedList(true);
+    }
+  }, [searchInputValue]);
+
+  const handleSearch = (v) => {
+    if (!v) {
+      return;
+    }
+
+    setSearchInputValue(v);
+    setShowAutoCompletedList(false);
+
+    const obj = extractSearchQuery(v);
+    const queryString = objToQueryString(obj);
+    searchMapMutate(queryString);
+  };
+
   const [data] = useState(DATA);
 
   const [clickedStation, setClickedStation] = useState({
     prev: null,
     current: null,
   });
+
+  useEffect(() => {}, [searchInputValue]);
 
   useEffect(() => {
     const mapSetting = () => {
@@ -30,18 +78,21 @@ export default function Main() {
 
       const map = new naver.maps.Map("map", mapOptions);
       naver.maps.Event.addListener(map, "click", () => {
+        setShowAutoCompletedList(false);
         setClickedStation((prevState) => {
           const prevMarker = prevState.current;
 
           prevMarker &&
             prevMarker.setIcon({
-              content: `<div class="marker-container">
-            <div class="marker-box">
-              <span class="marker-content">${prevMarker.title}</span>
-            </div>
-            <span class="marker-box-triangle"></span>
-            <div class="marker-circle"></div>
-          </div>`,
+              content: `
+                <div class="marker-container">
+                  <div class="marker-box">
+                    <span class="marker-content">${prevMarker.title}</span>
+                  </div>
+                  <span class="marker-box-triangle"></span>
+                  <div class="marker-circle"></div>
+                </div>
+              `,
             });
 
           window.postMessage(
@@ -71,13 +122,15 @@ export default function Main() {
           map: createdMap,
           title: name,
           icon: {
-            content: `<div class="marker-container">
-                        <div class="marker-box">
-                          <span class="marker-content">${name}</span>
-                        </div>
-                        <span class="marker-box-triangle"></span>
-                        <div class="marker-circle"></div>
-                      </div>`,
+            content: `
+              <div class="marker-container">
+                <div class="marker-box">
+                  <span class="marker-content">${name}</span>
+                </div>
+                <span class="marker-box-triangle"></span>
+                <div class="marker-circle"></div>
+              </div>
+            `,
           },
         });
 
@@ -97,29 +150,31 @@ export default function Main() {
 
       prevMarker &&
         prevMarker.setIcon({
-          content: `<div class="marker-container">
-      <div class="marker-box">
-        <span class="marker-content">${marker.title}</span>
-      </div>
-      <span class="marker-box-triangle"></span>
-      <div class="marker-circle"></div>
-    </div>`,
+          content: `
+            <div class="marker-container">
+              <div class="marker-box">
+                <span class="marker-content">${marker.title}</span>
+              </div>
+              <span class="marker-box-triangle"></span>
+              <div class="marker-circle"></div>
+            </div>
+          `,
         });
 
       currentMarker &&
         currentMarker.setIcon({
-          content: `<div class="marker-container">
-    <div class="marker-box marker-box-clicked">
-      <span class="marker-content marker-content-clicked">${marker.title}</span>
-    </div>
-    <span class="marker-box-triangle marker-box-clicked"></span>
-    <div class="marker-circle"></div>
-  </div>`,
+          content: `
+            <div class="marker-container">
+              <div class="marker-box marker-box-clicked">
+                <span class="marker-content marker-content-clicked">${marker.title}</span>
+              </div>
+              <span class="marker-box-triangle marker-box-clicked"></span>
+              <div class="marker-circle"></div>
+            </div>
+          `,
         });
 
-      window.postMessage(
-        JSON.stringify({ type: "MARKER_ID", data: id })
-      );
+      window.postMessage(JSON.stringify({ type: "MARKER_ID", data: id }));
 
       return {
         prev: prevMarker,
@@ -130,6 +185,14 @@ export default function Main() {
 
   return (
     <div>
+      <SearchInput
+        searchInputValue={searchInputValue}
+        setSearchInputValue={setSearchInputValue}
+        autoCompletedData={autoCompletedData}
+        showAutoCompletedList={showAutoCompletedList}
+        setShowAutoCompletedList={setShowAutoCompletedList}
+        handleSearch={handleSearch}
+      />
       <div id="map" ref={mapRef} style={{ width: "100%", height: "100vh" }} />
     </div>
   );

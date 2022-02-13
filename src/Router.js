@@ -3,8 +3,6 @@ import Main from "./pages/main";
 import Static from "./pages/static";
 
 const Router = () => {
-  console.log("ROUTER is RENDERED");
-
   return (
     <Routes>
       <Route exact path="/" element={<Main />} />
