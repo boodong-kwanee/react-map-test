@@ -1,5 +1,20 @@
 import { SI, GU, DONG } from "../data/search";
 
+export const zoomLevelToRadius = (level) => {
+  const obj = {
+    11: 3000,
+    12: 2000,
+    13: 1000,
+    14: 500,
+    15: 300,
+    16: 100,
+    17: 50,
+    18: 30,
+  };
+
+  return obj[level];
+};
+
 export const objToQueryString = (obj) => {
   return Object.keys(obj)
     .map((key) => key + "=" + obj[key])

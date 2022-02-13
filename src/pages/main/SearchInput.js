@@ -27,30 +27,40 @@ export default function SearchInput({
           {searchInputValue &&
             autoCompletedData
               ?.slice(0, 8)
-              .map(({ _id, sido, gugun1, gugun2, bjdongGibon, danjiName }) => {
-                const arr = [
+              .map(
+                ({
+                  _id,
                   sido,
                   gugun1,
                   gugun2,
                   bjdongGibon,
                   danjiName,
-                ].filter((v) => !!v);
-                const address = arr.join(" ");
+                  location: { coordinates },
+                }) => {
+                  const arr = [
+                    sido,
+                    gugun1,
+                    gugun2,
+                    bjdongGibon,
+                    danjiName,
+                  ].filter((v) => !!v);
+                  const address = arr.join(" ");
 
-                return (
-                  <AutoCompletedItemBox
-                    key={_id}
-                    onClick={() => handleSearch(address)}
-                  >
-                    <AutoCompletedLeftBox>
-                      <HistoryMapIcon />
-                      <AutoCompletedTitle numberOfLines={1}>
-                        {address}
-                      </AutoCompletedTitle>
-                    </AutoCompletedLeftBox>
-                  </AutoCompletedItemBox>
-                );
-              })}
+                  return (
+                    <AutoCompletedItemBox
+                      key={_id}
+                      onClick={() => handleSearch(address, coordinates)}
+                    >
+                      <AutoCompletedLeftBox>
+                        <HistoryMapIcon />
+                        <AutoCompletedTitle numberOfLines={1}>
+                          {address}
+                        </AutoCompletedTitle>
+                      </AutoCompletedLeftBox>
+                    </AutoCompletedItemBox>
+                  );
+                }
+              )}
         </AutoCompletedListBox>
       )}
     </Container>
@@ -60,9 +70,8 @@ export default function SearchInput({
 const Container = styled.div`
   position: absolute;
   top: 27px;
-  left: 16px;
-  right: 16px;
-  background-color: #fff;
+  left: 0px;
+  right: 0px;
   border-radius: 4px;
   z-index: 1000;
 `;
@@ -72,6 +81,7 @@ const InputBox = styled.div`
   justify-content: space-between;
   align-items: center;
   height: 48px;
+  margin: 0 16px;
   padding: 14px 16px;
   border: 0.2px solid #979797;
   border-radius: 4px;

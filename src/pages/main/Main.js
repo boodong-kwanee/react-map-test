@@ -2,8 +2,11 @@
 import { useRef, useState, useEffect } from "react";
 import SearchInput from "./SearchInput";
 import { useAutoCompletedSearch, useSearchMap } from "../../hooks/search";
-import { extractSearchQuery, objToQueryString } from "../../utils/search";
-import { DATA } from "./data";
+import {
+  extractSearchQuery,
+  objToQueryString,
+  zoomLevelToRadius,
+} from "../../utils/search";
 import "./Marker.css";
 
 export default function Main() {
@@ -45,7 +48,7 @@ export default function Main() {
     }
   }, [searchInputValue]);
 
-  const handleSearch = (v) => {
+  const handleSearch = (v, coordinates) => {
     if (!v) {
       return;
     }
@@ -54,18 +57,79 @@ export default function Main() {
     setShowAutoCompletedList(false);
 
     const obj = extractSearchQuery(v);
-    const queryString = objToQueryString(obj);
-    searchMapMutate(queryString);
+    let queryString = objToQueryString(obj);
+
+    // if (coordinates) {
+    //   const [lng, lat] = coordinates;
+    //   queryString += `&lat=${lat}&lng=${lng}`;
+    // }
+
+    const zoomLevel = createdMap.getZoom();
+    const withRadius = `${queryString}&radius=${zoomLevelToRadius(zoomLevel)}`;
+    console.log({ withRadius });
+    searchMapMutate(withRadius);
   };
 
-  const [data] = useState(DATA);
+  useEffect(() => {
+    const moveCenter = () => {
+      if (searchMapData?.length > 0) {
+        const [lng, lat] = searchMapData[0].location.coordinates;
+        const firstDanjiLatLng = new naver.maps.LatLng(lat, lng);
+        createdMap.setCenter(firstDanjiLatLng);
+        createdMap.setZoom(16);
+      }
+    };
+
+    moveCenter();
+  }, [searchMapData]);
+
+  useEffect(() => {
+    const createMarkers = () => {
+      // naver.maps.Event?.removeListener(createdMap, "idle");
+      if (searchMapData?.length > 0) {
+        const arr = [];
+        searchMapData.forEach(
+          ({ _id, danjiName, geo, location: { coordinates } }) => {
+            const [lng, lat] = coordinates;
+
+            const marker = new naver.maps.Marker({
+              position: new naver.maps.LatLng(lat, lng),
+              map: createdMap,
+              title: danjiName,
+              icon: {
+                content: `
+                <div class="marker-container">
+                  <div class="marker-box">
+                    <span class="marker-content">${danjiName}</span>
+                  </div>
+                  <span class="marker-box-triangle"></span>
+                  <div class="marker-circle"></div>
+                </div>
+              `,
+              },
+            });
+
+            naver.maps.Event.addListener(marker, "click", () => {
+              markerClick(marker, _id);
+            });
+
+            arr.push(marker);
+          }
+        );
+
+        naver.maps.Event.addListener(createdMap, "idle", function () {
+          updateMarkers(createdMap, arr);
+        });
+      }
+    };
+
+    createMarkers();
+  }, [searchMapData]);
 
   const [clickedStation, setClickedStation] = useState({
     prev: null,
     current: null,
   });
-
-  useEffect(() => {}, [searchInputValue]);
 
   useEffect(() => {
     const mapSetting = () => {
@@ -74,6 +138,8 @@ export default function Main() {
         center: new naver.maps.LatLng(center.position.lat, center.position.lng),
         zoom: center.zoom,
         zoomControl: false,
+        minZoom: 12,
+        maxZoom: 18,
       };
 
       const map = new naver.maps.Map("map", mapOptions);
@@ -87,7 +153,7 @@ export default function Main() {
               content: `
                 <div class="marker-container">
                   <div class="marker-box">
-                    <span class="marker-content">${prevMarker.title}</span>
+                    <div class="marker-content">${prevMarker.title}</div>
                   </div>
                   <span class="marker-box-triangle"></span>
                   <div class="marker-circle"></div>
@@ -105,7 +171,9 @@ export default function Main() {
           };
         });
       });
+
       setCreatdMap(map);
+
       window.postMessage(
         JSON.stringify({ type: "MESSAGE", data: "MAP_IS_LOADED" })
       );
@@ -114,65 +182,67 @@ export default function Main() {
     mapSetting();
   }, []);
 
-  useEffect(() => {
-    const createMarkers = () => {
-      data.forEach(({ id, name, geo }) => {
-        const marker = new naver.maps.Marker({
-          position: new naver.maps.LatLng(geo.latitude, geo.longitude),
-          map: createdMap,
-          title: name,
-          icon: {
-            content: `
-              <div class="marker-container">
-                <div class="marker-box">
-                  <span class="marker-content">${name}</span>
-                </div>
-                <span class="marker-box-triangle"></span>
-                <div class="marker-circle"></div>
-              </div>
-            `,
-          },
-        });
+  const updateMarkers = (map, markers) => {
+    const mapBounds = map.getBounds();
+    let marker, position;
 
-        naver.maps.Event.addListener(marker, "click", () => {
-          markerClick(marker, id);
-        });
-      });
-    };
+    for (let i = 0; i < markers.length; i++) {
+      marker = markers[i];
+      position = marker.getPosition();
 
-    createMarkers();
-  }, [createdMap, data]);
+      if (mapBounds.hasLatLng(position)) {
+        showMarker(map, marker);
+      } else {
+        hideMarker(map, marker);
+      }
+    }
+  };
+
+  const showMarker = (map, marker) => {
+    if (marker.getMap()) return;
+    marker.setMap(map);
+  };
+
+  const hideMarker = (map, marker) => {
+    if (!marker.getMap()) return;
+    marker.setMap(null);
+  };
 
   const markerClick = (marker, id) => {
     setClickedStation((prevState) => {
       const prevMarker = prevState.current;
       const currentMarker = marker;
 
-      prevMarker &&
+      if (prevMarker) {
         prevMarker.setIcon({
           content: `
             <div class="marker-container">
               <div class="marker-box">
-                <span class="marker-content">${marker.title}</span>
+                <div class="marker-content">${prevMarker.title}</div>
               </div>
               <span class="marker-box-triangle"></span>
               <div class="marker-circle"></div>
             </div>
           `,
         });
+        prevMarker.setZIndex(100);
+      }
 
-      currentMarker &&
+      if (currentMarker) {
         currentMarker.setIcon({
           content: `
             <div class="marker-container">
               <div class="marker-box marker-box-clicked">
-                <span class="marker-content marker-content-clicked">${marker.title}</span>
+                <div class="marker-content marker-content-clicked">${marker.title}</div>
               </div>
               <span class="marker-box-triangle marker-box-clicked"></span>
               <div class="marker-circle"></div>
             </div>
           `,
         });
+
+        currentMarker.setZIndex(1000);
+      }
 
       window.postMessage(JSON.stringify({ type: "MARKER_ID", data: id }));
 
