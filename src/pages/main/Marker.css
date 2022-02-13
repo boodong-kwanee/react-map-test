@@ -1,9 +1,12 @@
+.naver-marker-container {
+  transform: translate(-50%, -50%);
+}
+
 .marker-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  /* transform: translate(-50%, -50%); */
 }
 
 .marker-box {
@@ -42,4 +45,23 @@
   border: 2px solid #fff;
   border-radius: 50%;
   background-color: #0f76ee;
+}
+
+.cluster-box {
+  z-index: 2000;
+  width: 63px;
+  height: 57px;
+  z-index: 1500;
+}
+
+.cluster-count {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 12px;
+  color: #fff;
+  font-size: 15px;
+  line-height: 18px;
+  text-align: center;
+  font-weight: bold;
 }

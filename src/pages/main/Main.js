@@ -10,7 +10,7 @@ import {
 import "./Marker.css";
 
 export default function Main() {
-  const { naver } = window;
+  const { naver, MarkerClustering, N } = window;
 
   const mapRef = useRef();
   const [createdMap, setCreatdMap] = useState();
@@ -30,106 +30,6 @@ export default function Main() {
   } = useAutoCompletedSearch();
 
   const { mutate: searchMapMutate, data: searchMapData } = useSearchMap();
-
-  useEffect(() => {
-    reset();
-
-    if (!searchInputValue || isAutoCompletedSuccess) {
-      setShowAutoCompletedList(false);
-      return;
-    }
-
-    const obj = extractSearchQuery(searchInputValue);
-    const queryString = objToQueryString(obj);
-    autoCompletedMutate(queryString);
-
-    if (!showAutoCompletedList) {
-      setShowAutoCompletedList(true);
-    }
-  }, [searchInputValue]);
-
-  const handleSearch = (v, coordinates) => {
-    if (!v) {
-      return;
-    }
-
-    setSearchInputValue(v);
-    setShowAutoCompletedList(false);
-
-    const obj = extractSearchQuery(v);
-    let queryString = objToQueryString(obj);
-
-    // if (coordinates) {
-    //   const [lng, lat] = coordinates;
-    //   queryString += `&lat=${lat}&lng=${lng}`;
-    // }
-
-    const zoomLevel = createdMap.getZoom();
-    const withRadius = `${queryString}&radius=${zoomLevelToRadius(zoomLevel)}`;
-    console.log({ withRadius });
-    searchMapMutate(withRadius);
-  };
-
-  useEffect(() => {
-    const moveCenter = () => {
-      if (searchMapData?.length > 0) {
-        const [lng, lat] = searchMapData[0].location.coordinates;
-        const firstDanjiLatLng = new naver.maps.LatLng(lat, lng);
-        createdMap.setCenter(firstDanjiLatLng);
-        createdMap.setZoom(16);
-      }
-    };
-
-    moveCenter();
-  }, [searchMapData]);
-
-  useEffect(() => {
-    const createMarkers = () => {
-      // naver.maps.Event?.removeListener(createdMap, "idle");
-      if (searchMapData?.length > 0) {
-        const arr = [];
-        searchMapData.forEach(
-          ({ _id, danjiName, geo, location: { coordinates } }) => {
-            const [lng, lat] = coordinates;
-
-            const marker = new naver.maps.Marker({
-              position: new naver.maps.LatLng(lat, lng),
-              map: createdMap,
-              title: danjiName,
-              icon: {
-                content: `
-                <div class="marker-container">
-                  <div class="marker-box">
-                    <span class="marker-content">${danjiName}</span>
-                  </div>
-                  <span class="marker-box-triangle"></span>
-                  <div class="marker-circle"></div>
-                </div>
-              `,
-              },
-            });
-
-            naver.maps.Event.addListener(marker, "click", () => {
-              markerClick(marker, _id);
-            });
-
-            arr.push(marker);
-          }
-        );
-
-        naver.maps.Event.addListener(createdMap, "idle", function () {
-          updateMarkers(createdMap, arr);
-        });
-      }
-    };
-
-    createMarkers();
-  }, [searchMapData]);
-
-  const [clickedStation, setClickedStation] = useState({
-    prev: null,
-    current: null,
-  });
 
   useEffect(() => {
     const mapSetting = () => {
@@ -181,6 +81,144 @@ export default function Main() {
 
     mapSetting();
   }, []);
+
+  useEffect(() => {
+    reset();
+
+    if (!searchInputValue || isAutoCompletedSuccess) {
+      setShowAutoCompletedList(false);
+      return;
+    }
+
+    const obj = extractSearchQuery(searchInputValue);
+    const queryString = objToQueryString(obj);
+    autoCompletedMutate(queryString);
+
+    if (!showAutoCompletedList) {
+      setShowAutoCompletedList(true);
+    }
+  }, [searchInputValue]);
+
+  const handleSearch = (v, coordinates) => {
+    if (!v) {
+      return;
+    }
+
+    setSearchInputValue(v);
+    setShowAutoCompletedList(false);
+
+    const obj = extractSearchQuery(v);
+    let queryString = objToQueryString(obj);
+
+    if (coordinates) {
+      const [lng, lat] = coordinates;
+      queryString += `&lat=${lat}&lng=${lng}`;
+    }
+
+    const zoomLevel = createdMap.getZoom();
+    const withRadius = `${queryString}&radius=${zoomLevelToRadius(zoomLevel)}`;
+    searchMapMutate(withRadius);
+  };
+
+  useEffect(() => {
+    const createMarkers = () => {
+      if (searchMapData?.length > 0) {
+        const markers = [];
+
+        searchMapData.forEach(
+          ({ _id, danjiName, geo, location: { coordinates } }) => {
+            const [lng, lat] = coordinates;
+
+            const marker = new naver.maps.Marker({
+              position: new naver.maps.LatLng(lat, lng),
+              icon: {
+                content: `
+                <div class="marker-container">
+                  <div class="marker-box">
+                    <span class="marker-content">${danjiName}</span>
+                  </div>
+                  <span class="marker-box-triangle"></span>
+                  <div class="marker-circle"></div>
+                </div>
+              `,
+              },
+              size: new naver.maps.Size(38, 58),
+              anchor: new naver.maps.Point(19, 58),
+            });
+
+            marker.getElement().className = "naver-marker-container";
+
+            // naver.maps.Event.addListener(marker, "click", () => {
+            //   markerClick(marker, _id);
+            // });
+
+            markers.push(marker);
+          }
+        );
+
+        const clusterMarker = {
+          content: `
+              <div class="cluster-box">
+                <svg width="63" height="57" viewBox="0 0 63 57" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 0H53C55.6522 0 58.1957 1.0422 60.0711 2.89732C61.9464 4.75244 63 7.26852 63 9.89205V33.633C63 36.2565 61.9464 38.7726 60.0711 40.6277C58.1957 42.4828 55.6522 43.525 53 43.525H27.887L15.107 57L10 43.525C7.34784 43.525 4.8043 42.4828 2.92893 40.6277C1.05357 38.7726 0 36.2565 0 33.633L0 9.89205C0 7.26852 1.05357 4.75244 2.92893 2.89732C4.8043 1.0422 7.34784 0 10 0V0Z" fill="#0F76EE"/>
+                </svg>
+                <div class="cluster-count"></div>
+              </div>
+            `,
+          size: N.Size(63, 57),
+          anchor: N.Point(20, 20),
+        };
+
+        const markerClustering = new MarkerClustering({
+          minClusterSize: 5,
+          maxZoom: 18,
+          map: createdMap,
+          markers,
+          disableClickZoom: false,
+          gridSize: 240,
+          icons: [
+            clusterMarker,
+            clusterMarker,
+            clusterMarker,
+            clusterMarker,
+            clusterMarker,
+            clusterMarker,
+            clusterMarker,
+          ],
+          indexGenerator: [50, 100, 200, 500, 1000, 2000, 3000],
+          stylingFunction: (clusterMarker, count) => {
+            const text =
+              clusterMarker.getElement().children[0].children[0].children[1];
+            text.innerHTML = count;
+          },
+        });
+
+        // naver.maps.Event.addListener(createdMap, "idle", () => {
+        //   updateMarkers(createdMap, markers);
+        // });
+      }
+    };
+
+    createMarkers();
+  }, [searchMapData]);
+
+  useEffect(() => {
+    const moveCenter = () => {
+      if (searchMapData?.length > 0) {
+        const [lng, lat] = searchMapData[0].location.coordinates;
+        const firstDanjiLatLng = new naver.maps.LatLng(lat, lng);
+        createdMap.setCenter(firstDanjiLatLng);
+        createdMap.setZoom(16);
+      }
+    };
+
+    moveCenter();
+  }, [searchMapData]);
+
+  const [clickedStation, setClickedStation] = useState({
+    prev: null,
+    current: null,
+  });
 
   const updateMarkers = (map, markers) => {
     const mapBounds = map.getBounds();
