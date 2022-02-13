@@ -1,6 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useRef, useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import SearchInput from "./SearchInput";
+import DanjiListBottomSheet from "./DanjiListBottomSheet";
 import { useAutoCompletedSearch, useSearchMap } from "../../hooks/search";
 import {
   extractSearchQuery,
@@ -12,14 +14,15 @@ import "./Marker.css";
 export default function Main() {
   const { naver, MarkerClustering, N } = window;
 
+  const [searchParams] = useSearchParams();
+  const query = searchParams.get("query");
+  const renderedLat = searchParams.get("lat") || 37.348159275838256;
+  const renderedLng = searchParams.get("lng") || 127.09817774825865;
+
   const mapRef = useRef();
   const [createdMap, setCreatdMap] = useState();
-  const [center] = useState({
-    position: { lat: 37.348159275838256, lng: 127.09817774825865 },
-    zoom: 16,
-  });
 
-  const [searchInputValue, setSearchInputValue] = useState("");
+  const [searchInputValue, setSearchInputValue] = useState(query);
   const [showAutoCompletedList, setShowAutoCompletedList] = useState(false);
 
   const {
@@ -35,8 +38,8 @@ export default function Main() {
     const mapSetting = () => {
       // 지도 생성
       const mapOptions = {
-        center: new naver.maps.LatLng(center.position.lat, center.position.lng),
-        zoom: center.zoom,
+        center: new naver.maps.LatLng(renderedLat, renderedLng),
+        zoom: 16,
         zoomControl: false,
         minZoom: 12,
         maxZoom: 18,
@@ -81,6 +84,13 @@ export default function Main() {
 
     mapSetting();
   }, []);
+
+  useEffect(() => {
+    if (createdMap) {
+      handleSearch(query, [renderedLng, renderedLat]);
+      console.log("설마 계속 렌더되니?");
+    }
+  }, [createdMap]);
 
   useEffect(() => {
     reset();
@@ -193,10 +203,6 @@ export default function Main() {
             text.innerHTML = count;
           },
         });
-
-        // naver.maps.Event.addListener(createdMap, "idle", () => {
-        //   updateMarkers(createdMap, markers);
-        // });
       }
     };
 
@@ -220,32 +226,6 @@ export default function Main() {
     prev: null,
     current: null,
   });
-
-  const updateMarkers = (map, markers) => {
-    const mapBounds = map.getBounds();
-    let marker, position;
-
-    for (let i = 0; i < markers.length; i++) {
-      marker = markers[i];
-      position = marker.getPosition();
-
-      if (mapBounds.hasLatLng(position)) {
-        showMarker(map, marker);
-      } else {
-        hideMarker(map, marker);
-      }
-    }
-  };
-
-  const showMarker = (map, marker) => {
-    if (marker.getMap()) return;
-    marker.setMap(map);
-  };
-
-  const hideMarker = (map, marker) => {
-    if (!marker.getMap()) return;
-    marker.setMap(null);
-  };
 
   const markerClick = (marker, id) => {
     setClickedStation((prevState) => {
@@ -294,6 +274,7 @@ export default function Main() {
 
   return (
     <div>
+      {/* <DanjiListBottomSheet /> */}
       <SearchInput
         searchInputValue={searchInputValue}
         setSearchInputValue={setSearchInputValue}
