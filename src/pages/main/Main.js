@@ -131,6 +131,7 @@ export default function Main() {
 
             const marker = new naver.maps.Marker({
               position: new naver.maps.LatLng(lat, lng),
+              title: danjiName,
               icon: {
                 content: `
                 <div class="marker-container">
@@ -148,9 +149,9 @@ export default function Main() {
 
             marker.getElement().className = "naver-marker-container";
 
-            // naver.maps.Event.addListener(marker, "click", () => {
-            //   markerClick(marker, _id);
-            // });
+            naver.maps.Event.addListener(marker, "click", () => {
+              markerClick(marker, _id);
+            });
 
             markers.push(marker);
           }
