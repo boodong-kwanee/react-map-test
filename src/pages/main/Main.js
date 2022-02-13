@@ -14,7 +14,7 @@ import "./Marker.css";
 export default function Main() {
   const { naver, MarkerClustering, N } = window;
 
-  const [searchParams] = useSearchParams();
+  const searchParams = new URLSearchParams(window.location.search);
   const query = searchParams.get("query");
   const renderedLat = searchParams.get("lat") || 37.348159275838256;
   const renderedLng = searchParams.get("lng") || 127.09817774825865;
