@@ -8,7 +8,10 @@ import "./DanjiListBottomSheet.css";
 
 const LIMIT = 10;
 
-export default function DanjiListBottomSheet({ searchMapData }) {
+export default function DanjiListBottomSheet({
+  searchMapData,
+  showBottomSheet,
+}) {
   const sheetRef = useRef();
 
   const [offset, setOffset] = useState(0);
@@ -16,6 +19,9 @@ export default function DanjiListBottomSheet({ searchMapData }) {
   useEffect(() => {
     if (sheetRef.current) {
       const header = document.querySelectorAll('[data-rsbs-header="true"]')[0];
+      if (!header.children) {
+        return;
+      }
 
       const listModeIcon = document.createElement("div");
       listModeIcon.addEventListener("click", () => {
@@ -49,12 +55,12 @@ export default function DanjiListBottomSheet({ searchMapData }) {
 
       header.appendChild(listModeIcon);
     }
-  }, [sheetRef.current]);
+  }, [sheetRef.current, showBottomSheet]);
 
   return (
     <>
       <BottomSheet
-        open
+        open={showBottomSheet}
         ref={sheetRef}
         defaultSnap={({ maxHeight }) => maxHeight / 4}
         snapPoints={({ maxHeight }) => [

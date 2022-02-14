@@ -277,9 +277,10 @@ export default function Main() {
 
   return (
     <div>
-      {showBottomSheet && (
-        <DanjiListBottomSheet searchMapData={searchMapData} />
-      )}
+      <DanjiListBottomSheet
+        showBottomSheet={showBottomSheet}
+        searchMapData={searchMapData}
+      />
       <SearchInput
         searchInputValue={searchInputValue}
         setSearchInputValue={setSearchInputValue}
