@@ -6,7 +6,7 @@ export const getSearchList = async (queryString) => {
     method: "GET",
   });
 
-  return response.data;
+  return response.data.danjis;
 };
 
 export const getSearchMap = async (queryString) => {
@@ -15,5 +15,5 @@ export const getSearchMap = async (queryString) => {
     method: "GET",
   });
 
-  return response.data;
+  return response.data.danjis;
 };
