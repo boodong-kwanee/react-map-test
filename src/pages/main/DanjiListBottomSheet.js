@@ -19,7 +19,7 @@ export default function DanjiListBottomSheet({
   useEffect(() => {
     if (sheetRef.current) {
       const header = document.querySelectorAll('[data-rsbs-header="true"]')[0];
-      if (!header.children) {
+      if (header.children) {
         return;
       }
 
