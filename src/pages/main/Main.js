@@ -77,9 +77,9 @@ export default function Main() {
 
       setCreatdMap(map);
 
-      window.postMessage(
-        JSON.stringify({ type: "MESSAGE", data: "MAP_IS_LOADED" })
-      );
+      // window.postMessage(
+      //   JSON.stringify({ type: "MESSAGE", data: "MAP_IS_LOADED" })
+      // );
     };
 
     mapSetting();
@@ -88,7 +88,6 @@ export default function Main() {
   useEffect(() => {
     if (createdMap) {
       handleSearch(query, [renderedLng, renderedLat]);
-      console.log("설마 계속 렌더되니?");
     }
   }, [createdMap]);
 
@@ -135,37 +134,35 @@ export default function Main() {
       if (searchMapData?.length > 0) {
         const markers = [];
 
-        searchMapData.forEach(
-          ({ _id, danjiName, geo, location: { coordinates } }) => {
-            const [lng, lat] = coordinates;
+        searchMapData.forEach((v) => {
+          const [lng, lat] = v.location.coordinates;
 
-            const marker = new naver.maps.Marker({
-              position: new naver.maps.LatLng(lat, lng),
-              title: danjiName,
-              icon: {
-                content: `
+          const marker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(lat, lng),
+            title: v.danjiName,
+            icon: {
+              content: `
                 <div class="marker-container">
                   <div class="marker-box">
-                    <span class="marker-content">${danjiName}</span>
+                    <span class="marker-content">${v.danjiName}</span>
                   </div>
                   <span class="marker-box-triangle"></span>
                   <div class="marker-circle"></div>
                 </div>
               `,
-              },
-              size: new naver.maps.Size(38, 58),
-              anchor: new naver.maps.Point(19, 58),
-            });
+            },
+            size: new naver.maps.Size(38, 58),
+            anchor: new naver.maps.Point(19, 58),
+          });
 
-            marker.getElement().className = "naver-marker-container";
+          marker.getElement().className = "naver-marker-container";
 
-            naver.maps.Event.addListener(marker, "click", () => {
-              markerClick(marker, _id);
-            });
+          naver.maps.Event.addListener(marker, "click", () => {
+            markerClick(marker, v);
+          });
 
-            markers.push(marker);
-          }
-        );
+          markers.push(marker);
+        });
 
         const clusterMarker = {
           content: `
@@ -229,7 +226,7 @@ export default function Main() {
 
   const [showBottomSheet, setShowBottomSheet] = useState(true);
 
-  const markerClick = (marker, id) => {
+  const markerClick = (marker, data) => {
     setClickedStation((prevState) => {
       const prevMarker = prevState.current;
       const currentMarker = marker;
@@ -265,7 +262,7 @@ export default function Main() {
         currentMarker.setZIndex(1000);
       }
 
-      window.postMessage(JSON.stringify({ type: "MARKER_ID", data: id }));
+      window.postMessage(JSON.stringify({ type: "MARKER_IS_CLICKED", data }));
       setShowBottomSheet(false);
 
       return {
