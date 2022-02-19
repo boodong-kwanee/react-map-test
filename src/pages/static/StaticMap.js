@@ -1,7 +1,7 @@
 import React from "react";
 
 export default function StaticMap() {
-  const searchParams = new URLSearchParams(window.location.search);
+  const searchParams = new URLSearchParams(window.location.hash.split("?")[1]);
   const renderedLat = searchParams.get("lat") || 37.3591614;
   const renderedLng = searchParams.get("lng") || 127.1054221;
 
