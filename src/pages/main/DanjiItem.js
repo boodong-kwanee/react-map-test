@@ -2,9 +2,23 @@ import React from "react";
 import styled from "styled-components";
 import { SmallArrowRightIcon } from "../../assets";
 
-export default function DanjiItem({ _id, danjiName, prices }) {
+export default function DanjiItem({
+  _id,
+  danjiName,
+  prices,
+  danjiCode,
+  price,
+}) {
+  const moveToDanjiDetail = () => {
+    window.postMessage(
+      JSON.stringify({
+        type: "DANJI_IN_BOTTOM_SHEET_CLICKED",
+        data: { danjiCode, scaleCode: prices[0] ? prices[0].pyeongCode : "" },
+      })
+    );
+  };
   return (
-    <Container onClick={() => console.log(_id)}>
+    <Container onClick={moveToDanjiDetail}>
       <DanjiName>{danjiName}</DanjiName>
       <InnerContainer>
         <InfoContainer>
@@ -12,12 +26,15 @@ export default function DanjiItem({ _id, danjiName, prices }) {
           <Price>
             {prices[0]?.silgeoraega
               ? `${(prices[0]?.silgeoraega / 10000).toFixed(1)}억`
-              : ""}
+              : "가격 없음"}
           </Price>
           <Seperator />
           <Rating>
-            {prices[0]?.prediction.twoYears}%{" "}
-            {prices[0]?.prediction.twoYears >= 0 ? "상승" : "하락"}
+            {prices[0]
+              ? `${prices[0].prediction.twoYears}% ${
+                  prices[0].prediction.twoYears >= 0 ? "상승" : "하락"
+                }`
+              : "에측값 없음"}
           </Rating>
           {/* <TagContainer>
         {tags.map(t => (

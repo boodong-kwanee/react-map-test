@@ -64,9 +64,7 @@ export default function Main() {
             });
 
           setShowBottomSheet(true);
-          window.postMessage(
-            JSON.stringify({ type: "MESSAGE", data: "MAP_IS_CLICKED" })
-          );
+          window.postMessage(JSON.stringify({ type: "MAP_IS_CLICKED" }));
 
           return {
             prev: prevMarker,
@@ -76,10 +74,6 @@ export default function Main() {
       });
 
       setCreatdMap(map);
-
-      // window.postMessage(
-      //   JSON.stringify({ type: "MESSAGE", data: "MAP_IS_LOADED" })
-      // );
     };
 
     mapSetting();

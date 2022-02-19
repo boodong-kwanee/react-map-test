@@ -25,9 +25,7 @@ export default function DanjiListBottomSheet({
 
       const listModeIcon = document.createElement("div");
       listModeIcon.addEventListener("click", () => {
-        window.postMessage(
-          JSON.stringify({ type: "MESSAGE", data: "LIST_MODE_ICON_CLICKED" })
-        );
+        window.postMessage(JSON.stringify({ type: "LIST_MODE_ICON_CLICKED" }));
       });
 
       listModeIcon.innerHTML = `

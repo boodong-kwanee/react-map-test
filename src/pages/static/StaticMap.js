@@ -5,8 +5,6 @@ export default function StaticMap() {
   const renderedLat = searchParams.get("lat") || 37.3591614;
   const renderedLng = searchParams.get("lng") || 127.1054221;
 
-  console.log({ renderedLat, renderedLng });
-
   return (
     <div>
       <img
