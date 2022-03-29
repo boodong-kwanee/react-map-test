@@ -17,6 +17,7 @@ export default function Main() {
   const query = searchParams.get("query");
   const renderedLat = searchParams.get("lat") || 37.348159275838256;
   const renderedLng = searchParams.get("lng") || 127.09817774825865;
+  const danjiId = searchParams.get("danjiId");
 
   const mapRef = useRef();
   const [createdMap, setCreatdMap] = useState();

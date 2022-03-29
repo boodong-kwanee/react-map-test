@@ -20,11 +20,11 @@ const App = () => {
           console.log({ url });
           PublicInstance.defaults.baseURL = url;
         }
-
-        setIsLoading(false);
       } catch (e) {
-        setIsLoading(false);
+        console.log(e);
       }
+
+      setIsLoading(false);
     };
 
     getUrl();

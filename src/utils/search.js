@@ -1,4 +1,5 @@
 import { SI, GU, DONG } from "../data/search";
+import { rationalNumberRegExpWith억 } from "./regExp";
 
 export const zoomLevelToRadius = (level) => {
   const obj = {
@@ -26,18 +27,38 @@ export const extractSearchQuery = (query) => {
   let gu = "";
   let dong = "";
   let danji = "";
+  let price = "";
 
   if (!query) {
-    return { si, gu, dong, danji };
+    return { si, gu, dong, danji, price };
   }
 
   const splited = query
     .split(" ")
     .filter((v) => !!v)
-    .map((v) => ({ isUsed: false, value: v }));
+    .map((v) => {
+      const reg = /[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/gi;
+      //특수문자 검증
+      if (reg.test(v)) {
+        //특수문자 제거후 리턴
+        return { isUsed: false, value: v.replace(reg, "") };
+      } else {
+        //특수문자가 없으므로 본래 문자 리턴
+        return { isUsed: false, value: v };
+      }
+    });
+
+  const numberIndex = splited.findIndex((v) =>
+    rationalNumberRegExpWith억.test(v.value)
+  );
+
+  if (numberIndex > -1) {
+    splited[numberIndex].isUsed = true;
+    price = splited[numberIndex].value.slice(0, -1);
+  }
 
   for (let i = 0; i < splited.length; i++) {
-    const word = new RegExp(`${splited[i].value}`, "g");
+    const word = new RegExp(`^${splited[i].value}`, "g");
 
     for (let j = 0; j < SI.length; j++) {
       if (si || splited[i].isUsed) {
@@ -82,5 +103,5 @@ export const extractSearchQuery = (query) => {
     danji = unusedKeywords[0].value;
   }
 
-  return { si, gu, dong, danji };
+  return { si, gu, dong, danji, price };
 };
