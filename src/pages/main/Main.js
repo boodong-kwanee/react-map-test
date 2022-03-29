@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
+import debounce from "lodash.debounce";
 import SearchInput from "./SearchInput";
 import DanjiListBottomSheet from "./DanjiListBottomSheet";
 import { useAutoCompletedSearch, useSearchMap } from "../../hooks/search";
@@ -86,21 +87,29 @@ export default function Main() {
     }
   }, [createdMap]);
 
+  const delayedExtractQueryAndFetch = useCallback(
+    debounce((q) => {
+      if (!q || isAutoCompletedSuccess) {
+        setShowAutoCompletedList(false);
+        return;
+      }
+
+      console.log("DEBOUNCE");
+
+      reset();
+      const obj = extractSearchQuery(q);
+      const queryString = objToQueryString(obj);
+      autoCompletedMutate(queryString);
+
+      if (!showAutoCompletedList) {
+        setShowAutoCompletedList(true);
+      }
+    }, 300),
+    []
+  );
+
   useEffect(() => {
-    reset();
-
-    if (!searchInputValue || isAutoCompletedSuccess) {
-      setShowAutoCompletedList(false);
-      return;
-    }
-
-    const obj = extractSearchQuery(searchInputValue);
-    const queryString = objToQueryString(obj);
-    autoCompletedMutate(queryString);
-
-    if (!showAutoCompletedList) {
-      setShowAutoCompletedList(true);
-    }
+    delayedExtractQueryAndFetch(searchInputValue);
   }, [searchInputValue]);
 
   const handleSearch = (v, coordinates) => {
