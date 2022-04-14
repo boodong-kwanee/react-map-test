@@ -1,4 +1,4 @@
-import { SI, GU, DONG } from "../data/search";
+import { SI, GU, GU1, GU2, DONG } from "../data/search";
 import { rationalNumberRegExpWith억 } from "./regExp";
 
 export const zoomLevelToRadius = (level) => {
@@ -24,13 +24,14 @@ export const objToQueryString = (obj) => {
 
 export const extractSearchQuery = (query) => {
   let si = "";
-  let gu = "";
+  let gu1 = "";
+  let gu2 = "";
   let dong = "";
   let danji = "";
   let price = "";
 
   if (!query) {
-    return { si, gu, dong, danji, price };
+    return { si, gu1, gu2, dong, danji, price };
   }
 
   const splited = query
@@ -48,14 +49,13 @@ export const extractSearchQuery = (query) => {
       }
     });
 
-  const numberIndex = splited.findIndex((v) =>
-    rationalNumberRegExpWith억.test(v.value)
-  );
-
-  if (numberIndex > -1) {
-    splited[numberIndex].isUsed = true;
-    price = splited[numberIndex].value.slice(0, -1);
-  }
+  splited.forEach((v, i) => {
+    console.log(i, v.value, /^\d*\.?\d*억/g.test(v.value));
+    if (/^\d*\.?\d*억/g.test(v.value)) {
+      splited[i].isUsed = true;
+      price = v.value.slice(0, -1);
+    }
+  });
 
   for (let i = 0; i < splited.length; i++) {
     const word = new RegExp(`^${splited[i].value}`, "g");
@@ -72,13 +72,25 @@ export const extractSearchQuery = (query) => {
       }
     }
 
-    for (let j = 0; j < GU.length; j++) {
-      if (gu || splited[i].isUsed) {
+    for (let j = 0; j < GU1.length; j++) {
+      if (gu1 || splited[i].isUsed) {
         break;
       }
 
-      if (GU[j].match(word)) {
-        gu = GU[j];
+      if (GU1[j].match(word)) {
+        gu1 = GU1[j];
+        splited[i].isUsed = true;
+        break;
+      }
+    }
+
+    for (let j = 0; j < GU2.length; j++) {
+      if (gu2 || splited[i].isUsed) {
+        break;
+      }
+
+      if (GU2[j].match(word)) {
+        gu2 = GU2[j];
         splited[i].isUsed = true;
         break;
       }
@@ -103,5 +115,5 @@ export const extractSearchQuery = (query) => {
     danji = unusedKeywords[0].value;
   }
 
-  return { si, gu, dong, danji, price };
+  return { si, gu1, gu2, dong, danji, price };
 };
