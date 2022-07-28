@@ -130,6 +130,7 @@ export default function Main() {
 
     const zoomLevel = createdMap.getZoom();
     const withRadius = `${queryString}&radius=${zoomLevelToRadius(zoomLevel)}`;
+    console.log({ withRadius });
     searchMapMutate(withRadius);
   };
 
