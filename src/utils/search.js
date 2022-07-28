@@ -38,7 +38,7 @@ export const extractSearchQuery = (query) => {
     .split(" ")
     .filter((v) => !!v)
     .map((v) => {
-      const reg = /[\{\}\[\]\/?.,;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/gi;
+      const reg = /[\{\}\[\]\/?.;:|\)*~`!^\-_+<>@\#$%&\\\=\(\'\"]/gi;
       //특수문자 검증
       if (reg.test(v)) {
         //특수문자 제거후 리턴
